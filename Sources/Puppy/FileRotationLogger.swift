@@ -48,10 +48,14 @@ public struct FileRotationLogger: FileLoggerable {
         #if os(Windows)
         return try FileManager.default.windowsFileSize(atPath: fileURL.path)
         #else
-        let attributes = try FileManager.default.attributesOfItem(atPath: fileURL.path)
-        // swiftlint:disable force_cast
-        return attributes[.size] as! UInt64
-        // swiftlint:enable force_cast
+        let value = try fileURL.resourceValues(forKeys: [.fileSizeKey])
+        guard let size = value.fileSize else {
+            let attributes = try FileManager.default.attributesOfItem(atPath: fileURL.path)
+            // swiftlint:disable force_cast
+            return attributes[.size] as! UInt64
+            // swiftlint:enable force_cast
+        }
+        return UInt64(size)
         #endif
     }
 
